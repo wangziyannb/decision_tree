@@ -11,15 +11,14 @@ class Node():
 
 def preprocess1(data):
     l_feature=len(data[0])-1
-    possible_value=[set{} for _ in range(l_feature)]
+    possible_value=[set() for _ in range(l_feature)]
     for i in range(l_feature):
         for row in data:
-            p[i].add(row[i])
+            possible_value[i].add(row[i])
     return possible_value #p=[{'feature0':'不重复出现数字‘}，{}...]
 
-def buildtree(con_id,dcheader,l1,l2,gi1,gi2,data):
-    if len(l1+l2) == len(data)
-        dad = Node(None, None,None,None)
+def buildtree(con_id,dcheader,l1,l2,gi1,gi2,dad):
+    if len(l1)<=2 or len(l2)<=2:return
     Name_son1 = (f'{dcheader[con_id[0]]} <={con_id[1]}')
     Name_son2 = (f'{dcheader[con_id[0]]} > {con_id[1]}')
     son1 = Node(Name_son1,len(l1),dad,gi1)
@@ -29,12 +28,13 @@ def buildtree(con_id,dcheader,l1,l2,gi1,gi2,data):
     if gi1 < gi2:
         son2 = dad
         a,b,c,d,e = splitdata(preprocess1(l2), l2)
-        buildtree(a,dcheader,b,c,d,e,l2)
+        buildtree(a,dcheader,b,c,d,e,dad)
+
     else:
         son1 = dad
         a, b, c, d, e = splitdata(preprocess1(l1), l1)
-        buildtree(a, dcheader, b, c, d, e, l1)
-    return
+        buildtree(a, dcheader, b, c, d, e, dad)
+
 
 
 
@@ -44,10 +44,13 @@ def buildtree(con_id,dcheader,l1,l2,gi1,gi2,data):
 
 def splitdata (possible_value,data):
     bestgini=shuji(data)
-    li1=[]
-    li2=[]
+    li1 = []
+    li2 = []
+    exit_ = False
     for i, n in enumerate(possible_value):
+        o = 0
         for q in n:
+            o += 1
             for row in data:
                 if row[i]<=q:
                     li1.append(row)
@@ -63,7 +66,7 @@ def splitdata (possible_value,data):
             if xiao<bestgini:
                 bestgini = gini1
                 condition_id = [i,q]
-                if i != len(possible_value)-1 and q != n[-1]:
+                if i != len(possible_value)-1 and o != len(n):
                     li1 = []
                     li2 = []
         if exit_:
@@ -80,29 +83,32 @@ def shuji(ww):
 
 
 def preprocess0 (data):
+    datacount = {}
     for row in data:
 
         key=row[-1]
-        datacount={}
-        if datacount[key]==None:
+
+        if datacount.get(key)==None:
             datacount[key]=1
         else:datacount[key]+=1
     return datacount #total={'feature0':'count','feature2':'count'...}
 
 def load(path):
     reader = csv.reader(open(path, 'r'))
-    dcHeader = {}
+    dcheader = {}
     lsHeader = next(reader)
     for i, szY in enumerate(lsHeader):
         colid = i
-        dcHeader[colid] = szY
-    global dcheader
+        dcheader[colid] = szY
+
     data=[row for row in reader]
-    return data
+    return data, dcheader
 
 
 if __name__ == '__main__':
     Path = ('fishiris.csv')
-    Data = load(Path)
+    Data,dchead = load(Path)
     a, b, c, d, e = splitdata(preprocess1(Data), Data)
-    buildtree(a, dcheader, b, c, d, e, Data)
+    dad = Node(None, None, None, None)
+    buildtree(a, dchead, b, c, d, e, dad)
+ascd=1
