@@ -26,13 +26,13 @@ def buildtree(con_id,dcheader,l1,l2,gi1,gi2,dad=Node(None, None, None, None)):
     dad.children[Name_son1] = son1
     dad.children[Name_son2] = son2
     if gi1 < gi2:
-        son2 = dad
+        dad = son2
         z, x, c, v, b, best_gain2 = splitdata(preprocess1(l2), l2)
         if best_gain2 >0:
             buildtree(z,dcheader,x,c,v,b,dad)
         else: return
     else:
-        son1 = dad
+        dad = son1
         z, x, c, v, b, best_gain1 = splitdata(preprocess1(l1), l1)
         if best_gain1 >0:
             buildtree(z,dcheader,x,c,v,b,dad)
@@ -46,7 +46,7 @@ def buildtree(con_id,dcheader,l1,l2,gi1,gi2,dad=Node(None, None, None, None)):
 
 
 def splitdata (possible_value,data):
-    global condition_id, ls1, ls2, gini1, gini2
+    global condition_id, ls1, ls2, ginitai1, ginitai2
     bestgini=shuji(data)
     bestgain=0.0
     li1 = []
@@ -54,7 +54,7 @@ def splitdata (possible_value,data):
     for i, n in enumerate(possible_value):
         for q in n:
             for row in data:
-                if row[i]<=q:
+                if row[i]>=q:
                     li1.append(row)
                 else:li2.append(row)
             gini1 = shuji(li1)
@@ -65,9 +65,11 @@ def splitdata (possible_value,data):
                 condition_id = [i,q]
                 ls1 = li1
                 ls2 = li2
+                ginitai1 = gini1
+                ginitai2 = gini2
             li1 = []
             li2 = []
-    return condition_id, ls1, ls2, gini1, gini2, bestgain
+    return condition_id, ls1, ls2, ginitai1, ginitai2, bestgain
 
 def shuji(ww):
     gini=0
