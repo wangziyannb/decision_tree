@@ -19,8 +19,8 @@ def preprocess1(data):
 
 def buildtree(con_id,dcheader,l1,l2,gi1,gi2,dad=Node(None, None, None, None)):
     #if len(l1)<=2 or len(l2)<=2:return
-    Name_son1 = (f'{dcheader[con_id[0]]} <={con_id[1]}')
-    Name_son2 = (f'{dcheader[con_id[0]]} > {con_id[1]}')
+    Name_son1 = (f'{dcheader[con_id[0]]} >={con_id[1]}')
+    Name_son2 = (f'{dcheader[con_id[0]]} < {con_id[1]}')
     son1 = Node(Name_son1,len(l1),dad,gi1)
     son2 = Node(Name_son2,len(l2),dad,gi2)
     dad.children[Name_son1] = son1
