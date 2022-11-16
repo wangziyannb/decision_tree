@@ -27,7 +27,6 @@ def preprocess1(data):
             possible_value[i].add(row[i])
             if i == 0:
                 classes.add(row[l_feature])
-
     return possible_value, classes  # p=[{'feature0':'不重复出现数字‘}，{}...]
 
 
@@ -103,26 +102,45 @@ def calc_gini(ww):
 def preprocess0(data):
     datacount = {}
     for row in data:
-
         key = row[-1]
-
-        if datacount.get(key) == None:
+        if datacount.get(key) is None:
             datacount[key] = 1
         else:
             datacount[key] += 1
     return datacount  # total={'feature0':'count','feature2':'count'...}
 
 
-def load(path):
+def load(path, mapping=None):
     reader = csv.reader(open(path, 'r'))
     dcheader = {}
     lsHeader = next(reader)
     for i, szY in enumerate(lsHeader):
         colid = i
         dcheader[colid] = szY
-
-    data = [row for row in reader]
+    data = []
+    for r in reader:
+        for i in range(len(r)):
+            if mapping is not None:
+                r[i] = mapping(r[i])
+        data.append(r)
     return data, dcheader
+
+
+mapping = {}
+
+
+def entry_mapping(attr):
+    global mapping
+    try:
+        return str(float(attr))
+    except:
+        if mapping is None:
+            mapping = {}
+        if mapping.get(attr) is not None:
+            return mapping[attr]
+        else:
+            mapping[attr] = len(mapping)
+            return mapping[attr]
 
 
 def predict(data, dchead, dad):
@@ -133,6 +151,8 @@ def predict(data, dchead, dad):
         idx = set(dad.children[i].name.keys()).pop()
         value = float(set(dad.children[i].name.values()).pop())
         break
+    if idx is None or value is None:
+        return 16
     if data[idx] >= value:
         dad_ = dad.children[i]
         return predict(data, dchead, dad_)
@@ -176,10 +196,12 @@ class Metrics:
 
 
 if __name__ == '__main__':
-    Path = 'fishiris.csv'
+    Path = 'Social_Network_Ads.csv'
     t = Tracer(Path)
     gdad = Node(None, None, None, None)
-    Data, dchead = load(Path)
+    # mapping = {'Female': "0", 'Male': "1", 'True': 1, 'true': 1, 'False': 0, 'false': 0}
+
+    Data, dchead = load(Path, entry_mapping)
     _, classes = preprocess1(Data)
     confusion_matrix = np.zeros((len(classes) + 1, len(classes) + 1))
     classes_dict = {}
@@ -202,18 +224,18 @@ if __name__ == '__main__':
         validation_result.append({"label": i, "gt": ground_truth, "pred": result})
 
     ls = [x for x in classes]
-    ls.append("sum")
+    ls.append("total")
     confusion_matrix[len(classes_dict)] = np.sum(confusion_matrix, axis=0)
     for i in confusion_matrix:
         i[len(i) - 1] = np.sum(i)
     d = ConfusionMatrixDisplay(confusion_matrix=confusion_matrix, display_labels=ls)
     d.plot()
-    plt.show()
 
     m = Metrics(confusion_matrix, classes_dict)
     metrics = {"precision": m.precision, "recall": m.recall, "f1": m.f1_score}
     metrics = dict(metrics, **{"result": validation_result})
     t.output(metrics)
+    plt.show()
     # testvalue = [5, 3.6, 1.4, 0.2]
     # a = predict(testvalue, dchead, gdad)
     # print("(virtual)ground_truth:", None, ", pred:", a)
