@@ -121,7 +121,7 @@ def load(path, mapping=None):
     for r in reader:
         for i in range(len(r)):
             if mapping is not None:
-                r[i] = mapping(r[i])
+                r[i] = mapping(r[i], i)
         data.append(r)
     return data, dcheader
 
@@ -129,18 +129,24 @@ def load(path, mapping=None):
 mapping = {}
 
 
-def entry_mapping(attr):
+def entry_mapping(attr, i):
     global mapping
     try:
         return str(float(attr))
     except:
         if mapping is None:
             mapping = {}
-        if mapping.get(attr) is not None:
-            return mapping[attr]
+        if mapping.get(i) is not None:
+            m = mapping.get(i)
+            if m.get(attr) is not None:
+                return m.get(attr)
+            else:
+                m[attr] = len(m)
+                return m[attr]
         else:
-            mapping[attr] = len(mapping)
-            return mapping[attr]
+            mapping[i] = {}
+            mapping[i][attr] = len(mapping[i])
+            return mapping[i][attr]
 
 
 def predict(data, dchead, dad):
@@ -152,7 +158,7 @@ def predict(data, dchead, dad):
         value = float(set(dad.children[i].name.values()).pop())
         break
     if idx is None or value is None:
-        return 16
+        return None
     if data[idx] >= value:
         dad_ = dad.children[i]
         return predict(data, dchead, dad_)
@@ -196,7 +202,7 @@ class Metrics:
 
 
 if __name__ == '__main__':
-    Path = 'Social_Network_Ads.csv'
+    Path = 'mushroom_agaricus-lepiota.csv'
     t = Tracer(Path)
     gdad = Node(None, None, None, None)
     # mapping = {'Female': "0", 'Male': "1", 'True': 1, 'true': 1, 'False': 0, 'false': 0}
@@ -211,17 +217,20 @@ if __name__ == '__main__':
         i += 1
     X_train, X_test = train_test_split(Data, test_size=0.2, random_state=42)
     condition_id, list_1, list_2, gini1, gini2, bestgain = splitdata(preprocess1(X_train)[0], X_train)
-    buildtree(condition_id, dchead, list_1, list_2, gini1, gini2, gdad, prunegini=0.05)
+    buildtree(condition_id, dchead, list_1, list_2, gini1, gini2, gdad, prunegini=0.005)
     validation_result = []
 
     for i in X_test:
         ground_truth = i.pop()
         dt_test = [float(x) for x in i]
         result = predict(dt_test, dchead, gdad)
-        if result != ground_truth:
-            print("(miss) label:", i, ", ground_truth:", ground_truth, ", pred:", result)
-        confusion_matrix[classes_dict[ground_truth]][classes_dict[result]] += 1
-        validation_result.append({"label": i, "gt": ground_truth, "pred": result})
+        if result is None:
+            validation_result.append({"label": i, "gt": ground_truth, "pred": result})
+        else:
+            if result != ground_truth:
+                print("(miss) label:", i, ", ground_truth:", ground_truth, ", pred:", result)
+            confusion_matrix[classes_dict[ground_truth]][classes_dict[result]] += 1
+            validation_result.append({"label": i, "gt": ground_truth, "pred": result})
 
     ls = [x for x in classes]
     ls.append("total")
