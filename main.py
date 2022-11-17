@@ -202,7 +202,7 @@ class Metrics:
 
 
 if __name__ == '__main__':
-    Path = 'australian.csv'
+    Path = 'biodeg.csv'
     t = Tracer(Path)
     gdad = Node(None, None, None, None)
     # mapping = {'Female': "0", 'Male': "1", 'True': 1, 'true': 1, 'False': 0, 'false': 0}
