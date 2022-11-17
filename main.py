@@ -119,7 +119,7 @@ def load(path, mapping=None):
         dcheader[colid] = szY
     data = []
     for r in reader:
-        for i in range(len(r)):
+        for i in range(len(r)-1):
             if mapping is not None:
                 r[i] = mapping(r[i], i)
         data.append(r)
@@ -202,7 +202,7 @@ class Metrics:
 
 
 if __name__ == '__main__':
-    Path = 'mushroom_agaricus-lepiota.csv'
+    Path = 'australian.csv'
     t = Tracer(Path)
     gdad = Node(None, None, None, None)
     # mapping = {'Female': "0", 'Male': "1", 'True': 1, 'true': 1, 'False': 0, 'false': 0}
